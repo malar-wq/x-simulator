@@ -1,1 +1,454 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>temp</title></head><body>loading</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>X Simulator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#000;color:#e7e9ea;font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.45;min-height:100dvh;display:flex;flex-direction:column;align-items:center}
+.screen{display:none;width:100%;max-width:420px;padding:14px;flex-direction:column;gap:12px;min-height:100dvh}
+.screen.active{display:flex}
+#title-screen{justify-content:center;text-align:center;gap:18px}
+.logo{font-size:20px;color:#1d9bf0;text-shadow:3px 3px 0 #000}
+.subtitle{font-size:9px;color:#71767b;max-width:320px;margin:0 auto;line-height:1.6}
+.btn{background:#1d9bf0;color:#fff;border:3px solid #fff;border-bottom-width:5px;border-right-width:5px;padding:12px 16px;font-family:inherit;font-size:11px;cursor:pointer;text-transform:uppercase;width:100%}
+.btn:active{border-bottom-width:2px;border-right-width:2px;transform:translate(2px,2px)}
+.stats{background:#111;border:3px solid #333;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-label{font-size:7px;color:#71767b}
+.stat-value{font-size:14px}
+.big{color:#1d9bf0}
+.bar-row{grid-column:1/-1}
+.bar-label{font-size:7px;color:#71767b;display:flex;justify-content:space-between;margin-bottom:3px}
+.bar{height:12px;background:#222;border:2px solid #444}
+.bar-fill{height:100%;background:#1d9bf0;transition:width .3s}
+.panel{background:#111;border:3px solid #333;padding:14px;flex:1;display:flex;flex-direction:column;gap:12px}
+.day{font-size:8px;color:#71767b;text-align:center}
+.status{font-size:10px;text-align:center;min-height:28px;line-height:1.5}
+.event{background:#0a0a0a;border:2px dashed #444;padding:10px;font-size:9px;display:none;line-height:1.5}
+.event.show{display:block}
+.boss-banner{background:linear-gradient(90deg,#2e1065,#6b21a8);border:3px solid #c084fc;padding:10px;text-align:center;font-size:9px;color:#e9d5ff;display:none}
+.boss-banner.show{display:block}
+.boss-portrait{width:64px;height:64px;margin:6px auto 0;image-rendering:pixelated;display:none;border:2px solid #c084fc}
+.boss-portrait.show{display:block}
+.choices{display:flex;flex-direction:column;gap:7px}
+.choice{background:#1a1a1a;border:3px solid #444;color:#e7e9ea;padding:11px 10px;font-family:inherit;font-size:10px;text-align:left;cursor:pointer}
+.choice:active{border-color:#1d9bf0}
+.choice.boss{border-color:#c084fc}
+.choice-name{display:block;margin-bottom:4px}
+.choice-desc{font-size:8px;color:#71767b}
+.results{display:none;flex-direction:column;gap:10px;text-align:center}
+.results.show{display:flex}
+.num{font-size:22px;margin:6px 0}
+.plus{color:#00ba7c}.minus{color:#f4212e}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#111;border:3px solid #ffd400;padding:10px 14px;font-size:9px;z-index:99;display:none;text-align:center;max-width:90%}
+.toast.show{display:block}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.shake{animation:shake .35s}
+#end-screen{justify-content:center;text-align:center;gap:16px}
+.end-title{font-size:15px}
+.cert{background:#111;border:4px solid #ffd400;padding:16px;font-size:9px;line-height:1.7}
+.footer{font-size:7px;color:#71767b;text-align:center}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div id="title-screen" class="screen active">
+  <div class="logo">X SIMULATOR</div>
+  <div class="subtitle">Become popular in 3–5 minutes.<br>Or lose everything in one post.</div>
+  <button class="btn" style="width:auto" onclick="start()">START</button>
+  <div class="footer">v5</div>
+</div>
+
+<div id="game-screen" class="screen">
+  <div class="stats">
+    <div>
+      <div class="stat-label">FOLLOWERS</div>
+      <div class="stat-value big" id="followers">124</div>
+    </div>
+    <div>
+      <div class="stat-label">POSTS</div>
+      <div class="stat-value" id="posts">0</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span>TO MONETIZATION</span><span id="prog-text">124 / 10k</span></div>
+      <div class="bar"><div class="bar-fill" id="prog" style="width:1%"></div></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="day">Day <span id="day">1</span></div>
+    <div class="boss-banner" id="boss-banner"></div>
+    <img class="boss-portrait" id="boss-portrait" width="64" height="64" alt="boss">
+    <div class="status" id="status">Account ready. Write a post.</div>
+    <div class="event" id="event"></div>
+
+    <div id="compose">
+      <button class="btn" onclick="openChoices()">WRITE A POST</button>
+    </div>
+    <div id="choices" class="choices hidden"></div>
+    <div id="results" class="results">
+      <div id="res-content"></div>
+      <button class="btn" onclick="afterResult()">CONTINUE</button>
+    </div>
+  </div>
+</div>
+
+<div id="end-screen" class="screen">
+  <div class="end-title" id="end-title"></div>
+  <div class="cert" id="cert"></div>
+  <div style="font-size:9px;color:#71767b" id="end-stats"></div>
+  <button class="btn" style="width:auto" onclick="location.reload()">PLAY AGAIN</button>
+</div>
+
+<script>
+const TOPICS = [
+  {name: "Morning coffee & life", desc: "Safe and cozy", risk: 0.15},
+  {name: "Hot take on AI", desc: "Everyone has one", risk: 0.30},
+  {name: "Rage at the algorithm", desc: "Feels good, risky", risk: 0.38},
+  {name: "Childhood nostalgia", desc: "Warm feelings", risk: 0.18},
+  {name: "Pure shitpost", desc: "Zero thoughts", risk: 0.45}
+];
+
+const GOOD_TEXTS = [
+  "Solid numbers. People are finding you.",
+  "It actually blew up. What the hell.",
+  "The algorithm decided you exist today.",
+  "Mid-sized accounts are quoting you.",
+  "Views are climbing. Suspicious.",
+  "Someone with 50k followers liked it.",
+  "This one feels different. In a good way.",
+  "You're officially not invisible anymore.",
+  "The void is paying attention for once.",
+  "Decent engagement. The machine is watching."
+];
+
+const BAD_TEXTS = [
+  "The post bombed. People are mass-unfollowing.",
+  "Almost zero reach. Algorithm ignored you.",
+  "4 views. The algorithm said 'nah'.",
+  "Your best post got 17 impressions.",
+  "Someone replied 'this ain't it'.",
+  "You refreshed analytics 14 times. Still nothing.",
+  "The For You page rejected your existence.",
+  "Impressions: theoretical.",
+  "Even your mom didn't like this one.",
+  "Quiet day. Too quiet."
+];
+
+const EVENTS = [
+  "Your post got into a huge quote chain.",
+  "Nikita Beer posted a thread about the algorithm. Your reach dropped.",
+  "A verified account quote-tweeted you: 'this is so real'.",
+  "X randomly boosted one of your old posts.",
+  "Someone reported your account for 'spam'.",
+  "The algorithm is being especially moody today.",
+  "A few mid-sized accounts started quoting you.",
+  "Your post randomly hit the For You page.",
+  "You got ratio'd by a reply with 3 likes.",
+  "A bot farm started interacting with your post."
+];
+
+const BOSSES = [
+  {id: 1, name: "THE SILENCE", desc: "Nobody sees your posts.", trigger: 3300},
+  {id: 2, name: "RATIO DEMON", desc: "Your best posts get 17 views.", trigger: 6600},
+  {id: 3, name: "THE ALGORITHM", desc: "Final boss. It decides your fate.", trigger: 9000}
+];
+
+let S = {
+  followers: 124,
+  posts: 0,
+  day: 1,
+  shadow: 0,
+  doneBosses: new Set(),
+  boss: null,
+  pendingEvent: null
+};
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function fmt(n) {
+  if (n >= 1000) return (n / 1000).toFixed(1) + "k";
+  return Math.floor(n) + "";
+}
+
+function toast(m) {
+  const t = document.getElementById("toast");
+  t.textContent = m;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+function update() {
+  document.getElementById("followers").textContent = fmt(S.followers);
+  document.getElementById("posts").textContent = S.posts;
+  document.getElementById("day").textContent = S.day;
+  const p = Math.min(100, (S.followers / 10000) * 100);
+  document.getElementById("prog").style.width = p + "%";
+  document.getElementById("prog-text").textContent = fmt(S.followers) + " / 10k";
+}
+
+function start() {
+  document.getElementById("title-screen").classList.remove("active");
+  document.getElementById("game-screen").classList.add("active");
+  update();
+}
+
+function hideAll() {
+  document.getElementById("compose").classList.add("hidden");
+  document.getElementById("choices").classList.add("hidden");
+  document.getElementById("results").classList.remove("show");
+  document.getElementById("event").classList.remove("show");
+}
+
+function openChoices() {
+  hideAll();
+  const box = document.getElementById("choices");
+  box.classList.remove("hidden");
+  box.innerHTML = "";
+
+  if (S.boss) {
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:8px;color:#c084fc;margin-bottom:8px";
+    h.textContent = "BOSS FIGHT — CHOOSE YOUR MOVE";
+    box.appendChild(h);
+
+    [
+      {n: "Ignore it and post normally", d: "Risky"},
+      {n: "Address the problem directly", d: "Confront"},
+      {n: "Go full chaos mode", d: "High risk / high reward"}
+    ].forEach((o, i) => {
+      const b = document.createElement("button");
+      b.className = "choice boss";
+      b.innerHTML = `<span class="choice-name">${o.n}</span><span class="choice-desc">${o.d}</span>`;
+      b.onclick = () => fightBoss(i);
+      box.appendChild(b);
+    });
+  } else {
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:8px;color:#71767b;margin-bottom:8px";
+    h.textContent = "CHOOSE A TOPIC";
+    box.appendChild(h);
+
+    TOPICS.forEach(t => {
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.innerHTML = `<span class="choice-name">${t.name}</span><span class="choice-desc">${t.desc}</span>`;
+      b.onclick = () => doPost(t);
+      box.appendChild(b);
+    });
+  }
+}
+
+function doPost(topic) {
+  hideAll();
+  document.getElementById("status").textContent = "Posting...";
+
+  setTimeout(() => {
+    S.posts++;
+    if (S.posts % 2 === 0) S.day++;
+
+    let gain = 0;
+    let text = "";
+    let type = "good";
+    let banned = false;
+
+    if (S.shadow > 0) {
+      S.shadow--;
+      gain = Math.floor(Math.random() * 60) - 30;
+      text = pick(BAD_TEXTS);
+      type = "bad";
+    } else {
+      const base = 280 + Math.floor(Math.random() * 520);
+      const roll = Math.random();
+
+      if (roll < topic.risk * 0.55) {
+        if (Math.random() < 0.13) {
+          banned = true;
+        } else if (Math.random() < 0.55) {
+          gain = -Math.floor(S.followers * (0.15 + Math.random() * 0.35));
+          text = pick(BAD_TEXTS);
+          type = "bad";
+        } else {
+          gain = Math.floor(Math.random() * 80) - 40;
+          text = pick(BAD_TEXTS);
+          type = "bad";
+        }
+      } else if (roll > 0.77) {
+        gain = base + 450 + Math.floor(Math.random() * 750);
+        text = pick(GOOD_TEXTS);
+        type = "good";
+      } else {
+        gain = base + Math.floor(Math.random() * 320);
+        text = pick(GOOD_TEXTS);
+        type = "good";
+      }
+    }
+
+    if (banned) {
+      return end(false, "One post was enough.<br><br>Mass unfollows + ban.<br>Account destroyed.");
+    }
+
+    S.followers = Math.max(10, S.followers + gain);
+    S.pendingEvent = pick(EVENTS);
+
+    showResult(gain, text, type);
+    update();
+
+    if (S.followers >= 10000) {
+      setTimeout(() => end(true), 800);
+    }
+  }, 600);
+}
+
+function fightBoss(choice) {
+  hideAll();
+  document.getElementById("status").textContent = "Fighting...";
+
+  setTimeout(() => {
+    S.posts++;
+    const chance = 0.40 + choice * 0.16;
+    const win = Math.random() < chance;
+
+    if (win) {
+      const gain = 600 + Math.floor(Math.random() * 1000);
+      S.followers += gain;
+      S.doneBosses.add(S.boss.id);
+      document.getElementById("boss-banner").classList.remove("show");
+      document.getElementById("boss-portrait").classList.remove("show");
+      toast("BOSS DEFEATED");
+      showResult(gain, "You beat " + S.boss.name + "!", "good");
+      S.boss = null;
+    } else {
+      if (Math.random() < 0.20) {
+        return end(false, S.boss.name + " destroyed your account.<br><br>Everyone left. Ban hammer.");
+      }
+      const loss = Math.floor(S.followers * (0.18 + Math.random() * 0.30));
+      S.followers = Math.max(25, S.followers - loss);
+      showResult(-loss, S.boss.name + " hit hard. Try again.", "bad");
+      if (Math.random() < 0.40) {
+        S.boss = null;
+        document.getElementById("boss-banner").classList.remove("show");
+        document.getElementById("boss-portrait").classList.remove("show");
+      }
+    }
+
+    S.pendingEvent = pick(EVENTS);
+    update();
+    if (S.followers >= 10000) setTimeout(() => end(true), 700);
+  }, 700);
+}
+
+function showResult(gain, text, type) {
+  const c = document.getElementById("res-content");
+  const cls = gain >= 0 ? "plus" : "minus";
+  const sign = gain >= 0 ? "+" : "−";
+  c.innerHTML = `<div>Followers</div><div class="num ${cls}">${sign}${fmt(Math.abs(gain))}</div>`;
+
+  const e = document.getElementById("event");
+  e.textContent = text;
+  e.classList.add("show");
+  e.style.color = type === "good" ? "#00ba7c" : "#f4212e";
+
+  if (type === "bad") {
+    document.getElementById("panel").classList.add("shake");
+    setTimeout(() => document.getElementById("panel").classList.remove("shake"), 350);
+  }
+
+  document.getElementById("status").textContent = "";
+  document.getElementById("results").classList.add("show");
+}
+
+function afterResult() {
+  document.getElementById("results").classList.remove("show");
+  document.getElementById("event").classList.remove("show");
+
+  if (S.pendingEvent) {
+    const e = document.getElementById("event");
+    e.textContent = S.pendingEvent;
+    e.classList.add("show");
+    e.style.color = "#ffd400";
+
+    if (S.pendingEvent.includes("Nikita Beer") || S.pendingEvent.includes("reach dropped")) {
+      S.shadow = 1;
+      toast("Shadowban");
+    } else if (S.pendingEvent.includes("verified") || S.pendingEvent.includes("quote") || S.pendingEvent.includes("For You") || S.pendingEvent.includes("boosted")) {
+      const g = 180 + Math.floor(Math.random() * 380);
+      S.followers += g;
+      toast("+" + fmt(g));
+    } else if (S.pendingEvent.includes("reported")) {
+      if (Math.random() < 0.11) {
+        return end(false, "The report went through.<br>Account suspended.");
+      }
+    }
+
+    S.pendingEvent = null;
+    update();
+
+    document.getElementById("res-content").innerHTML = `<div style="font-size:9px;color:#ffd400">Event happened</div>`;
+    document.getElementById("results").classList.add("show");
+    return;
+  }
+
+  checkBoss();
+
+  if (S.boss) {
+    document.getElementById("status").textContent = "Boss is waiting. Choose your move.";
+  } else {
+    document.getElementById("status").textContent = "What do you post next?";
+  }
+  openChoices();
+}
+
+function checkBoss() {
+  if (S.boss) return;
+  const portraits = {
+    1: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23111'/%3E%3Crect x='3' y='3' width='10' height='10' fill='%23222'/%3E%3Crect x='5' y='5' width='2' height='2' fill='%23555'/%3E%3Crect x='9' y='5' width='2' height='2' fill='%23555'/%3E%3Crect x='6' y='9' width='4' height='1' fill='%23444'/%3E%3Crect x='4' y='12' width='8' height='1' fill='%23333'/%3E%3C/svg%3E",
+    2: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231a0505'/%3E%3Crect x='2' y='2' width='12' height='12' fill='%233b0a0a'/%3E%3Crect x='4' y='4' width='3' height='3' fill='%23f4212e'/%3E%3Crect x='9' y='4' width='3' height='3' fill='%23f4212e'/%3E%3Crect x='5' y='5' width='1' height='1' fill='%23000'/%3E%3Crect x='10' y='5' width='1' height='1' fill='%23000'/%3E%3Crect x='5' y='9' width='6' height='2' fill='%23f4212e'/%3E%3Crect x='6' y='10' width='4' height='1' fill='%23000'/%3E%3Crect x='3' y='13' width='2' height='1' fill='%23a00'/%3E%3Crect x='11' y='13' width='2' height='1' fill='%23a00'/%3E%3C/svg%3E",
+    3: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2305111a'/%3E%3Crect x='2' y='2' width='12' height='12' fill='%230a1f2e'/%3E%3Crect x='4' y='4' width='8' height='8' fill='%231d9bf0' opacity='0.3'/%3E%3Crect x='6' y='6' width='4' height='4' fill='%231d9bf0'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%23000'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%231d9bf0'/%3E%3Crect x='12' y='3' width='1' height='1' fill='%231d9bf0'/%3E%3Crect x='3' y='12' width='1' height='1' fill='%231d9bf0'/%3E%3Crect x='12' y='12' width='1' height='1' fill='%231d9bf0'/%3E%3Crect x='1' y='7' width='2' height='1' fill='%231d9bf0'/%3E%3Crect x='13' y='7' width='2' height='1' fill='%231d9bf0'/%3E%3C/svg%3E"
+  };
+  for (const b of BOSSES) {
+    if (!S.doneBosses.has(b.id) && S.followers >= b.trigger) {
+      S.boss = b;
+      const banner = document.getElementById("boss-banner");
+      banner.textContent = "BOSS: " + b.name + " — " + b.desc;
+      banner.classList.add("show");
+      const portrait = document.getElementById("boss-portrait");
+      portrait.src = portraits[b.id];
+      portrait.classList.add("show");
+      toast("BOSS APPEARED");
+      break;
+    }
+  }
+}
+
+function end(win, msg) {
+  document.getElementById("game-screen").classList.remove("active");
+  document.getElementById("end-screen").classList.add("active");
+
+  if (win) {
+    document.getElementById("end-title").textContent = "CONGRATS!";
+    document.getElementById("end-title").style.color = "#00ba7c";
+    document.getElementById("cert").innerHTML = `
+      You reached <strong style="color:#1d9bf0">10,000 followers</strong>.<br><br>
+      Monetization unlocked.<br><br>
+      You now earn<br>
+      <strong style="color:#ffd400">about $3 a month</strong>.<br><br>
+      The algorithm is forced to notice you.<br>
+      (For now)
+    `;
+  } else {
+    document.getElementById("end-title").textContent = "ACCOUNT DESTROYED";
+    document.getElementById("end-title").style.color = "#f4212e";
+    document.getElementById("cert").innerHTML = msg || "Everything is gone.";
+  }
+  document.getElementById("end-stats").textContent = S.posts + " posts • Day " + S.day;
+}
+</script>
+</body>
+</html>
