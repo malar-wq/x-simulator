@@ -3,55 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>X Simulator</title>
+<title>X Simulator v3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-:root{--bg:#000;--panel:#111;--border:#333;--text:#e7e9ea;--muted:#71767b;--accent:#1d9bf0;--green:#00ba7c;--red:#f4212e;--yellow:#ffd400;--purple:#c084fc}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--text);font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.45;min-height:100dvh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+body{background:#000;color:#e7e9ea;font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.45;min-height:100dvh;display:flex;flex-direction:column;align-items:center}
 .screen{display:none;width:100%;max-width:420px;padding:14px;flex-direction:column;gap:12px;min-height:100dvh}
 .screen.active{display:flex}
 #title-screen{justify-content:center;text-align:center;gap:18px}
-.logo{font-size:22px;color:var(--accent);text-shadow:3px 3px 0 #000}
-.subtitle{font-size:9px;color:var(--muted);max-width:300px;margin:0 auto;line-height:1.6}
-.pixel-btn{background:var(--accent);color:#fff;border:3px solid #fff;border-bottom-width:5px;border-right-width:5px;padding:12px 16px;font-family:inherit;font-size:11px;cursor:pointer;text-transform:uppercase}
-.pixel-btn:active{border-bottom-width:2px;border-right-width:2px;transform:translate(2px,2px)}
-.pixel-btn.full{width:100%}
-.stats{background:var(--panel);border:3px solid var(--border);padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat-label{font-size:7px;color:var(--muted)}
+.logo{font-size:22px;color:#1d9bf0;text-shadow:3px 3px 0 #000}
+.subtitle{font-size:9px;color:#71767b;max-width:300px;margin:0 auto;line-height:1.6}
+.btn{background:#1d9bf0;color:#fff;border:3px solid #fff;border-bottom-width:5px;border-right-width:5px;padding:12px 16px;font-family:inherit;font-size:11px;cursor:pointer;text-transform:uppercase;width:100%}
+.btn:active{border-bottom-width:2px;border-right-width:2px;transform:translate(2px,2px)}
+.stats{background:#111;border:3px solid #333;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-label{font-size:7px;color:#71767b}
 .stat-value{font-size:14px}
-.stat-value.big{color:var(--accent)}
+.big{color:#1d9bf0}
 .bar-row{grid-column:1/-1}
-.bar-label{font-size:7px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:3px}
+.bar-label{font-size:7px;color:#71767b;display:flex;justify-content:space-between;margin-bottom:3px}
 .bar{height:12px;background:#222;border:2px solid #444}
-.bar-fill{height:100%;background:var(--accent);transition:width .35s ease}
-.main-panel{background:var(--panel);border:3px solid var(--border);padding:14px;flex:1;display:flex;flex-direction:column;gap:12px}
-.day{font-size:8px;color:var(--muted);text-align:center}
-.status{font-size:10px;text-align:center;min-height:32px;line-height:1.5}
+.bar-fill{height:100%;background:#1d9bf0;transition:width .3s}
+.panel{background:#111;border:3px solid #333;padding:14px;flex:1;display:flex;flex-direction:column;gap:12px}
+.day{font-size:8px;color:#71767b;text-align:center}
+.status{font-size:10px;text-align:center;min-height:28px}
 .event{background:#0a0a0a;border:2px dashed #444;padding:10px;font-size:9px;display:none;line-height:1.5}
 .event.show{display:block}
-.boss{background:linear-gradient(90deg,#2e1065,#6b21a8);border:3px solid var(--purple);padding:10px;text-align:center;font-size:9px;color:#e9d5ff;display:none}
-.boss.show{display:block}
+.boss-banner{background:linear-gradient(90deg,#2e1065,#6b21a8);border:3px solid #c084fc;padding:10px;text-align:center;font-size:9px;color:#e9d5ff;display:none}
+.boss-banner.show{display:block}
 .choices{display:flex;flex-direction:column;gap:7px}
-.choice{background:#1a1a1a;border:3px solid #444;color:var(--text);padding:11px 10px;font-family:inherit;font-size:10px;text-align:left;cursor:pointer}
-.choice:active{border-color:var(--accent)}
-.choice.boss{border-color:var(--purple)}
+.choice{background:#1a1a1a;border:3px solid #444;color:#e7e9ea;padding:11px 10px;font-family:inherit;font-size:10px;text-align:left;cursor:pointer}
+.choice:active{border-color:#1d9bf0}
+.choice.boss{border-color:#c084fc}
 .choice-name{display:block;margin-bottom:4px}
-.choice-desc{font-size:8px;color:var(--muted)}
+.choice-desc{font-size:8px;color:#71767b}
 .results{display:none;flex-direction:column;gap:10px;text-align:center}
 .results.show{display:flex}
-.big{font-size:20px;color:var(--accent);margin:4px 0}
-.plus{color:var(--green)}.minus{color:var(--red)}
-.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#111;border:3px solid var(--yellow);padding:10px 14px;font-size:9px;z-index:50;display:none;text-align:center;max-width:90%;line-height:1.4}
+.num{font-size:22px;margin:6px 0}
+.plus{color:#00ba7c}.minus{color:#f4212e}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#111;border:3px solid #ffd400;padding:10px 14px;font-size:9px;z-index:99;display:none;text-align:center;max-width:90%}
 .toast.show{display:block}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .shake{animation:shake .35s}
 #end-screen{justify-content:center;text-align:center;gap:16px}
 .end-title{font-size:16px}
-.certificate{background:#111;border:4px solid var(--yellow);padding:16px;font-size:9px;line-height:1.7}
-.footer{font-size:7px;color:var(--muted);text-align:center}
+.cert{background:#111;border:4px solid #ffd400;padding:16px;font-size:9px;line-height:1.7}
+.footer{font-size:7px;color:#71767b;text-align:center}
 .hidden{display:none!important}
-.loading{opacity:.5}
 </style>
 </head>
 <body>
@@ -60,72 +57,65 @@ body{background:var(--bg);color:var(--text);font-family:'Press Start 2P',monospa
 <div id="title-screen" class="screen active">
   <div class="logo">X SIMULATOR</div>
   <div class="subtitle">Become popular in 3–5 minutes.<br>Or lose everything in one post.</div>
-  <button class="pixel-btn" onclick="start()">START ACCOUNT</button>
-  <div class="footer">Absurd growth edition</div>
+  <button class="btn" style="width:auto" onclick="start()">START ACCOUNT</button>
+  <div class="footer">v3 — boss fix</div>
 </div>
 
 <div id="game-screen" class="screen">
   <div class="stats">
-    <div>
-      <div class="stat-label">FOLLOWERS</div>
-      <div class="stat-value big" id="followers">124</div>
-    </div>
-    <div>
-      <div class="stat-label">POSTS</div>
-      <div class="stat-value" id="posts">0</div>
-    </div>
+    <div><div class="stat-label">FOLLOWERS</div><div class="stat-value big" id="followers">124</div></div>
+    <div><div class="stat-label">POSTS</div><div class="stat-value" id="posts">0</div></div>
     <div class="bar-row">
       <div class="bar-label"><span>TO MONETIZATION</span><span id="prog-text">124 / 10k</span></div>
-      <div class="bar"><div class="bar-fill" id="prog" style="width:1.2%"></div></div>
+      <div class="bar"><div class="bar-fill" id="prog" style="width:1%"></div></div>
     </div>
   </div>
 
-  <div class="main-panel" id="panel">
+  <div class="panel" id="panel">
     <div class="day">Day <span id="day">1</span></div>
-    <div class="boss" id="boss-banner"></div>
+    <div class="boss-banner" id="boss-banner"></div>
     <div class="status" id="status">Your account is ready. Post something.</div>
     <div class="event" id="event"></div>
 
     <div id="compose">
-      <button class="pixel-btn full" id="main-btn" onclick="showTopics()">WRITE A POST</button>
+      <button class="btn" onclick="openChoices()">WRITE A POST</button>
     </div>
     <div id="choices" class="choices hidden"></div>
     <div id="results" class="results">
       <div id="res-content"></div>
-      <button class="pixel-btn full" onclick="continueGame()">CONTINUE</button>
+      <button class="btn" onclick="afterResult()">CONTINUE</button>
     </div>
   </div>
 </div>
 
 <div id="end-screen" class="screen">
   <div class="end-title" id="end-title"></div>
-  <div class="certificate" id="cert"></div>
-  <div style="font-size:9px;color:var(--muted)" id="end-stats"></div>
-  <button class="pixel-btn" onclick="location.reload()">PLAY AGAIN</button>
+  <div class="cert" id="cert"></div>
+  <div style="font-size:9px;color:#71767b" id="end-stats"></div>
+  <button class="btn" style="width:auto" onclick="location.reload()">PLAY AGAIN</button>
 </div>
 
 <script>
 const TOPICS = [
   {name:"Morning coffee & life", desc:"Safe and cozy", risk:0.12},
-  {name:"Hot take on AI", desc:"Everyone has one", risk:0.28},
-  {name:"Rage at the algorithm", desc:"Feels good", risk:0.35},
+  {name:"Hot take on AI", desc:"Everyone has one", risk:0.25},
+  {name:"Rage at the algorithm", desc:"Feels good", risk:0.32},
   {name:"Childhood nostalgia", desc:"Warm feelings", risk:0.15},
-  {name:"Pure shitpost", desc:"Zero thoughts", risk:0.42}
+  {name:"Pure shitpost", desc:"Zero thoughts", risk:0.40}
 ];
 
-const SPECIAL_EVENTS = [
-  {text:"Nikita Beer just posted a new thread about the algorithm. Your reach just died.", effect:"shadow"},
-  {text:"A verified account quote-tweeted you with 'this is so real'.", effect:"boost"},
-  {text:"X pushed a random old post of yours. Chaos incoming.", effect:"chaos"},
-  {text:"Someone reported your account for 'spam'. Suspense...", effect:"risk"},
-  {text:"Your post got into a huge quote-tweet chain.", effect:"boost"},
-  {text:"The algorithm is testing you today. Be careful.", effect:"warning"}
+const EVENTS = [
+  {text:"Nikita Beer posted about the algorithm. Your reach died.", effect:"shadow"},
+  {text:"A verified account quote-tweeted you: 'this is so real'.", effect:"boost"},
+  {text:"X randomly pushed an old post of yours.", effect:"chaos"},
+  {text:"Someone reported you for spam...", effect:"risk"},
+  {text:"Your post got into a big quote chain.", effect:"boost"}
 ];
 
 const BOSSES = [
-  {id:1, name:"THE SILENCE", desc:"Nobody sees anything you post for a while.", trigger:1800},
-  {id:2, name:"RATIO DEMON", desc:"Your best posts get destroyed.", trigger:4500},
-  {id:3, name:"THE ALGORITHM", desc:"Final boss. It decides your fate.", trigger:7800}
+  {id:1, name:"THE SILENCE", desc:"Nobody sees your posts.", at:1800},
+  {id:2, name:"RATIO DEMON", desc:"Your best posts get destroyed.", at:4500},
+  {id:3, name:"THE ALGORITHM", desc:"Final boss.", at:7800}
 ];
 
 let S = {
@@ -133,27 +123,24 @@ let S = {
   posts: 0,
   day: 1,
   shadow: 0,
-  bossesDone: new Set(),
-  currentBoss: null
+  doneBosses: new Set(),
+  boss: null
 };
 
-function fmt(n){
-  if(n >= 1000) return (n/1000).toFixed(1) + "k";
-  return Math.floor(n) + "";
-}
+function fmt(n){ return n >= 1000 ? (n/1000).toFixed(1)+"k" : Math.floor(n)+""; }
 
-function toast(msg){
+function toast(m){
   const t = document.getElementById("toast");
-  t.textContent = msg;
+  t.textContent = m;
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2200);
+  setTimeout(()=>t.classList.remove("show"), 2000);
 }
 
 function update(){
   document.getElementById("followers").textContent = fmt(S.followers);
   document.getElementById("posts").textContent = S.posts;
   document.getElementById("day").textContent = S.day;
-  const p = Math.min(100, (S.followers / 10000) * 100);
+  const p = Math.min(100, S.followers/100);
   document.getElementById("prog").style.width = p + "%";
   document.getElementById("prog-text").textContent = fmt(S.followers) + " / 10k";
 }
@@ -164,40 +151,43 @@ function start(){
   update();
 }
 
-function showTopics(){
+function hideAll(){
   document.getElementById("compose").classList.add("hidden");
+  document.getElementById("choices").classList.add("hidden");
   document.getElementById("results").classList.remove("show");
   document.getElementById("event").classList.remove("show");
+}
 
+function openChoices(){
+  hideAll();
   const box = document.getElementById("choices");
   box.classList.remove("hidden");
   box.innerHTML = "";
 
-  if(S.currentBoss){
-    const title = document.createElement("div");
-    title.style.cssText = "font-size:8px;color:var(--purple);margin-bottom:6px";
-    title.textContent = "BOSS FIGHT — CHOOSE ACTION";
-    box.appendChild(title);
+  if(S.boss){
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:8px;color:#c084fc;margin-bottom:8px";
+    h.textContent = "BOSS FIGHT — CHOOSE YOUR MOVE";
+    box.appendChild(h);
 
-    const opts = [
-      {name:"Ignore it and post normally", desc:"Risky"},
-      {name:"Address the problem directly", desc:"Confront"},
-      {name:"Go full chaos mode", desc:"Maximum risk"}
-    ];
-    opts.forEach((o, i) => {
+    [
+      {n:"Ignore and post normally", d:"Risky"},
+      {n:"Address it directly", d:"Confront"},
+      {n:"Go full chaos", d:"High risk / high reward"}
+    ].forEach((o,i)=>{
       const b = document.createElement("button");
       b.className = "choice boss";
-      b.innerHTML = `<span class="choice-name">${o.name}</span><span class="choice-desc">${o.desc}</span>`;
-      b.onclick = () => resolveBoss(i);
+      b.innerHTML = `<span class="choice-name">${o.n}</span><span class="choice-desc">${o.d}</span>`;
+      b.onclick = () => fightBoss(i);
       box.appendChild(b);
     });
   } else {
-    const title = document.createElement("div");
-    title.style.cssText = "font-size:8px;color:var(--muted);margin-bottom:6px";
-    title.textContent = "CHOOSE A TOPIC";
-    box.appendChild(title);
+    const h = document.createElement("div");
+    h.style.cssText = "font-size:8px;color:#71767b;margin-bottom:8px";
+    h.textContent = "CHOOSE A TOPIC";
+    box.appendChild(h);
 
-    TOPICS.forEach(t => {
+    TOPICS.forEach(t=>{
       const b = document.createElement("button");
       b.className = "choice";
       b.innerHTML = `<span class="choice-name">${t.name}</span><span class="choice-desc">${t.desc}</span>`;
@@ -208,198 +198,186 @@ function showTopics(){
 }
 
 function doPost(topic){
-  document.getElementById("choices").classList.add("hidden");
-  document.getElementById("status").innerHTML = `<span class="loading">Posting...</span>`;
+  hideAll();
+  document.getElementById("status").textContent = "Posting...";
 
-  setTimeout(() => {
+  setTimeout(()=>{
     S.posts++;
     if(S.posts % 2 === 0) S.day++;
 
-    let gain = 0;
-    let text = "";
-    let type = "normal";
-    let banned = false;
+    let gain = 0, text = "", type = "good", banned = false;
 
     if(S.shadow > 0){
       S.shadow--;
-      gain = Math.floor(Math.random() * 50) - 15;
-      text = "Still under shadowban. Almost nobody saw it.";
+      gain = Math.floor(Math.random()*40) - 10;
+      text = "Shadowban still active. Almost no reach.";
       type = "bad";
     } else {
-      const base = 200 + Math.floor(Math.random() * 500);
+      const base = 220 + Math.floor(Math.random()*480);
       const roll = Math.random();
 
-      if(roll < topic.risk * 0.5){
-        if(Math.random() < 0.16){
+      if(roll < topic.risk * 0.48){
+        if(Math.random() < 0.15){
           banned = true;
         } else if(Math.random() < 0.4){
-          gain = -Math.floor(S.followers * (0.25 + Math.random() * 0.45));
-          text = "The post bombed. People are leaving.";
+          gain = -Math.floor(S.followers * (0.2 + Math.random()*0.4));
+          text = "Bombed hard. People are leaving.";
           type = "bad";
         } else {
-          gain = Math.floor(Math.random() * 80) - 30;
+          gain = Math.floor(Math.random()*70) - 25;
           text = "Barely any reach.";
           type = "bad";
         }
-      } else if(roll > 0.75){
-        gain = base + 300 + Math.floor(Math.random() * 700);
-        text = "It actually blew up. What the hell.";
+      } else if(roll > 0.76){
+        gain = base + 400 + Math.floor(Math.random()*700);
+        text = "It blew up. Holy shit.";
         type = "good";
       } else {
-        gain = base + Math.floor(Math.random() * 350);
-        text = "Solid numbers. People are finding you.";
+        gain = base + Math.floor(Math.random()*300);
+        text = "Good numbers. People are finding you.";
         type = "good";
       }
     }
 
     if(banned){
-      endGame(false, "One post. That's all it took.<br><br>Mass unfollows + ban.<br>Account is gone.");
-      return;
+      return end(false, "One post was enough.<br><br>Mass unfollows + ban.<br>Account gone.");
     }
 
-    S.followers = Math.max(8, S.followers + gain);
+    S.followers = Math.max(10, S.followers + gain);
     showResult(gain, text, type);
     update();
 
-    if(S.followers >= 10000){
-      setTimeout(() => endGame(true), 800);
-      return;
-    }
-
-    if(S.posts > 0 && S.posts % 5 === 0){
-      setTimeout(triggerSpecial, 500);
-    } else {
-      setTimeout(checkBoss, 300);
-    }
-  }, 650);
+    if(S.followers >= 10000) return setTimeout(()=>end(true), 700);
+  }, 600);
 }
 
-function resolveBoss(choiceIndex){
-  document.getElementById("choices").classList.add("hidden");
-  document.getElementById("status").innerHTML = `<span class="loading">Fighting...</span>`;
+function fightBoss(choice){
+  hideAll();
+  document.getElementById("status").textContent = "Fighting...";
 
-  setTimeout(() => {
+  setTimeout(()=>{
     S.posts++;
-    const successChance = 0.42 + choiceIndex * 0.15;
-    const success = Math.random() < successChance;
+    const chance = 0.40 + choice * 0.16;
+    const win = Math.random() < chance;
 
-    if(success){
-      const gain = 500 + Math.floor(Math.random() * 900);
+    if(win){
+      const gain = 600 + Math.floor(Math.random()*900);
       S.followers += gain;
-      S.bossesDone.add(S.currentBoss.id);
+      S.doneBosses.add(S.boss.id);
       document.getElementById("boss-banner").classList.remove("show");
       toast("BOSS DEFEATED");
-      showResult(gain, "You survived " + S.currentBoss.name + "!", "good");
-      S.currentBoss = null;
+      showResult(gain, "You beat " + S.boss.name + "!", "good");
+      S.boss = null;
     } else {
-      if(Math.random() < 0.22){
-        endGame(false, S.currentBoss.name + " destroyed your account.<br><br>Everyone left. Ban hammer.");
-        return;
+      if(Math.random() < 0.2){
+        return end(false, S.boss.name + " ended your account.<br><br>Ban hammer.");
       }
-      const loss = Math.floor(S.followers * (0.2 + Math.random() * 0.35));
+      const loss = Math.floor(S.followers * (0.15 + Math.random()*0.3));
       S.followers = Math.max(20, S.followers - loss);
-      showResult(-loss, S.currentBoss.name + " hit hard. Try again.", "bad");
-      if(Math.random() < 0.5){
-        S.currentBoss = null;
+      showResult(-loss, S.boss.name + " hit you. Try again.", "bad");
+      if(Math.random() < 0.45){
+        S.boss = null;
         document.getElementById("boss-banner").classList.remove("show");
       }
     }
-
     update();
-    if(S.followers >= 10000) setTimeout(() => endGame(true), 700);
-  }, 800);
-}
-
-function triggerSpecial(){
-  const ev = SPECIAL_EVENTS[Math.floor(Math.random() * SPECIAL_EVENTS.length)];
-  const box = document.getElementById("event");
-  box.textContent = ev.text;
-  box.classList.add("show");
-  box.style.color = "#ffd400";
-
-  if(ev.effect === "shadow"){
-    S.shadow = 2;
-    toast("Shadowban applied");
-  } else if(ev.effect === "boost"){
-    const g = 350 + Math.floor(Math.random() * 550);
-    S.followers += g;
-    toast("+" + fmt(g) + " from event");
-  } else if(ev.effect === "chaos"){
-    if(Math.random() < 0.55){
-      S.followers += 450 + Math.floor(Math.random() * 600);
-    } else {
-      S.followers = Math.max(25, S.followers - Math.floor(S.followers * 0.18));
-    }
-  } else if(ev.effect === "risk"){
-    if(Math.random() < 0.12){
-      endGame(false, "The report went through.<br>Your account got suspended.");
-      return;
-    }
-  }
-  update();
-  checkBoss();
-}
-
-function checkBoss(){
-  if(S.currentBoss) return;
-  for(const b of BOSSES){
-    if(!S.bossesDone.has(b.id) && S.followers >= b.trigger){
-      S.currentBoss = b;
-      const banner = document.getElementById("boss-banner");
-      banner.textContent = "BOSS: " + b.name + " — " + b.desc;
-      banner.classList.add("show");
-      document.getElementById("status").textContent = "A boss appeared!";
-      toast("BOSS INCOMING");
-      break;
-    }
-  }
+    if(S.followers >= 10000) setTimeout(()=>end(true), 600);
+  }, 700);
 }
 
 function showResult(gain, text, type){
-  const content = document.getElementById("res-content");
-  const cls = gain > 0 ? "plus" : (gain < 0 ? "minus" : "");
-  const sign = gain > 0 ? "+" : "";
-  content.innerHTML = `<div>Followers</div><div class="big ${cls}">${sign}${fmt(Math.abs(gain))}</div>`;
+  const c = document.getElementById("res-content");
+  const cls = gain >= 0 ? "plus" : "minus";
+  const sign = gain >= 0 ? "+" : "-";
+  c.innerHTML = `<div>Followers</div><div class="num ${cls}">${sign}${fmt(Math.abs(gain))}</div>`;
 
-  const ev = document.getElementById("event");
-  ev.textContent = text;
-  ev.classList.add("show");
-  ev.style.color = type === "good" ? "#00ba7c" : (type === "bad" ? "#f4212e" : "#ffd400");
+  const e = document.getElementById("event");
+  e.textContent = text;
+  e.classList.add("show");
+  e.style.color = type === "good" ? "#00ba7c" : "#f4212e";
 
   if(type === "bad"){
     document.getElementById("panel").classList.add("shake");
-    setTimeout(() => document.getElementById("panel").classList.remove("shake"), 400);
+    setTimeout(()=>document.getElementById("panel").classList.remove("shake"), 350);
   }
 
   document.getElementById("status").textContent = "";
   document.getElementById("results").classList.add("show");
 }
 
-function continueGame(){
+function afterResult(){
   document.getElementById("results").classList.remove("show");
   document.getElementById("event").classList.remove("show");
 
-  if(S.currentBoss){
-    document.getElementById("status").textContent = "The boss is waiting...";
-    showTopics();
+  if(S.posts > 0 && S.posts % 5 === 0 && !S.boss){
+    doEvent();
+    return;
+  }
+
+  checkBoss();
+
+  if(S.boss){
+    document.getElementById("status").textContent = "Boss is here. Choose your move.";
+    openChoices();
   } else {
     document.getElementById("compose").classList.remove("hidden");
     document.getElementById("status").textContent = "What do you post next?";
   }
 }
 
-function endGame(win, customMsg){
+function doEvent(){
+  const ev = EVENTS[Math.floor(Math.random()*EVENTS.length)];
+  const e = document.getElementById("event");
+  e.textContent = ev.text;
+  e.classList.add("show");
+  e.style.color = "#ffd400";
+
+  if(ev.effect === "shadow"){
+    S.shadow = 2;
+    toast("Shadowban");
+  } else if(ev.effect === "boost"){
+    const g = 400 + Math.floor(Math.random()*500);
+    S.followers += g;
+    toast("+" + fmt(g));
+  } else if(ev.effect === "chaos"){
+    if(Math.random() < 0.5) S.followers += 500 + Math.floor(Math.random()*500);
+    else S.followers = Math.max(30, S.followers - Math.floor(S.followers*0.15));
+  } else if(ev.effect === "risk" && Math.random() < 0.12){
+    return end(false, "Report went through.<br>Account suspended.");
+  }
+
+  update();
+  checkBoss();
+
+  document.getElementById("results").classList.add("show");
+  document.getElementById("res-content").innerHTML = "<div style='font-size:9px;color:#ffd400'>Event happened</div>";
+}
+
+function checkBoss(){
+  if(S.boss) return;
+  for(const b of BOSSES){
+    if(!S.doneBosses.has(b.id) && S.followers >= b.at){
+      S.boss = b;
+      const banner = document.getElementById("boss-banner");
+      banner.textContent = "BOSS: " + b.name + " — " + b.desc;
+      banner.classList.add("show");
+      toast("BOSS APPEARED");
+      break;
+    }
+  }
+}
+
+function end(win, msg){
   document.getElementById("game-screen").classList.remove("active");
   document.getElementById("end-screen").classList.add("active");
-
   if(win){
     document.getElementById("end-title").textContent = "MONETIZED";
     document.getElementById("end-title").style.color = "#00ba7c";
-    document.getElementById("cert").innerHTML = `You reached <strong style="color:#1d9bf0">10,000 followers</strong><br><br>Monetization unlocked.<br>The algorithm has been forced to respect you.`;
+    document.getElementById("cert").innerHTML = `Reached <strong style="color:#1d9bf0">10,000 followers</strong><br><br>Monetization unlocked.`;
   } else {
     document.getElementById("end-title").textContent = "ACCOUNT DESTROYED";
     document.getElementById("end-title").style.color = "#f4212e";
-    document.getElementById("cert").innerHTML = customMsg || "Everything is gone.";
+    document.getElementById("cert").innerHTML = msg || "Everything is gone.";
   }
   document.getElementById("end-stats").textContent = S.posts + " posts • Day " + S.day;
 }
