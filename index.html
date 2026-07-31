@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -56,40 +56,40 @@ body{background:#000;color:#e7e9ea;font-family:'Press Start 2P',monospace;font-s
 
 <div id="title-screen" class="screen active">
   <div class="logo">X SIMULATOR</div>
-  <div class="subtitle">Стань популярным за 3–5 минут.<br>Или потеряй всё за один пост.</div>
-  <button class="btn" style="width:auto" onclick="start()">НАЧАТЬ</button>
-  <div class="footer">v4</div>
+  <div class="subtitle">Become popular in 3–5 minutes.<br>Or lose everything in one post.</div>
+  <button class="btn" style="width:auto" onclick="start()">START</button>
+  <div class="footer">v4 EN</div>
 </div>
 
 <div id="game-screen" class="screen">
   <div class="stats">
     <div>
-      <div class="stat-label">ПОДПИСЧИКИ</div>
+      <div class="stat-label">FOLLOWERS</div>
       <div class="stat-value big" id="followers">124</div>
     </div>
     <div>
-      <div class="stat-label">ПОСТЫ</div>
+      <div class="stat-label">POSTS</div>
       <div class="stat-value" id="posts">0</div>
     </div>
     <div class="bar-row">
-      <div class="bar-label"><span>ДО МОНЕТИЗАЦИИ</span><span id="prog-text">124 / 10к</span></div>
+      <div class="bar-label"><span>TO MONETIZATION</span><span id="prog-text">124 / 10k</span></div>
       <div class="bar"><div class="bar-fill" id="prog" style="width:1%"></div></div>
     </div>
   </div>
 
   <div class="panel" id="panel">
-    <div class="day">День <span id="day">1</span></div>
+    <div class="day">Day <span id="day">1</span></div>
     <div class="boss-banner" id="boss-banner"></div>
-    <div class="status" id="status">Аккаунт готов. Напиши пост.</div>
+    <div class="status" id="status">Account ready. Write a post.</div>
     <div class="event" id="event"></div>
 
     <div id="compose">
-      <button class="btn" onclick="openChoices()">НАПИСАТЬ ПОСТ</button>
+      <button class="btn" onclick="openChoices()">WRITE A POST</button>
     </div>
     <div id="choices" class="choices hidden"></div>
     <div id="results" class="results">
       <div id="res-content"></div>
-      <button class="btn" onclick="afterResult()">ПРОДОЛЖИТЬ</button>
+      <button class="btn" onclick="afterResult()">CONTINUE</button>
     </div>
   </div>
 </div>
@@ -98,33 +98,33 @@ body{background:#000;color:#e7e9ea;font-family:'Press Start 2P',monospace;font-s
   <div class="end-title" id="end-title"></div>
   <div class="cert" id="cert"></div>
   <div style="font-size:9px;color:#71767b" id="end-stats"></div>
-  <button class="btn" style="width:auto" onclick="location.reload()">ИГРАТЬ СНОВА</button>
+  <button class="btn" style="width:auto" onclick="location.reload()">PLAY AGAIN</button>
 </div>
 
 <script>
 const TOPICS = [
-  {name: "Утренний кофе и жизнь", desc: "Безопасно и уютно", risk: 0.15},
-  {name: "Горячий тейк про ИИ", desc: "У всех есть мнение", risk: 0.30},
-  {name: "Злость на алгоритм", desc: "Приятно, но рискованно", risk: 0.38},
-  {name: "Ностальгия по детству", desc: "Тёплые чувства", risk: 0.18},
-  {name: "Чистый щитпост", desc: "Ноль мыслей", risk: 0.45}
+  {name: "Morning coffee & life", desc: "Safe and cozy", risk: 0.15},
+  {name: "Hot take on AI", desc: "Everyone has one", risk: 0.30},
+  {name: "Rage at the algorithm", desc: "Feels good, risky", risk: 0.38},
+  {name: "Childhood nostalgia", desc: "Warm feelings", risk: 0.18},
+  {name: "Pure shitpost", desc: "Zero thoughts", risk: 0.45}
 ];
 
 const EVENTS = [
-  "Твой пост попал в большую цепочку цитирования.",
-  "Никита Бир выложил тред про алгоритмы. Твой охват упал.",
-  "Верифицированный аккаунт сделал репост со словами «это так правда».",
-  "X внезапно поднял один из твоих старых постов.",
-  "Кто-то пожаловался на твой аккаунт за «спам».",
-  "Алгоритм сегодня особенно капризный.",
-  "Несколько средних аккаунтов начали тебя цитировать.",
-  "Твой пост случайно попал в рекомендации."
+  "Your post got into a huge quote chain.",
+  "Nikita Beer posted a thread about the algorithm. Your reach dropped.",
+  "A verified account quote-tweeted you: 'this is so real'.",
+  "X randomly boosted one of your old posts.",
+  "Someone reported your account for 'spam'.",
+  "The algorithm is being especially moody today.",
+  "A few mid-sized accounts started quoting you.",
+  "Your post randomly hit the For You page."
 ];
 
 const BOSSES = [
-  {id: 1, name: "ТИШИНА", desc: "Никто не видит твои посты.", at: 5},
-  {id: 2, name: "ДЕМОН РЕЙТИО", desc: "Лучшие посты получают 17 просмотров.", at: 10},
-  {id: 3, name: "АЛГОРИТМ", desc: "Финальный босс. Он решает твою судьбу.", at: 15}
+  {id: 1, name: "THE SILENCE", desc: "Nobody sees your posts.", at: 5},
+  {id: 2, name: "RATIO DEMON", desc: "Your best posts get 17 views.", at: 10},
+  {id: 3, name: "THE ALGORITHM", desc: "Final boss. It decides your fate.", at: 15}
 ];
 
 let S = {
@@ -138,7 +138,7 @@ let S = {
 };
 
 function fmt(n) {
-  if (n >= 1000) return (n / 1000).toFixed(1) + " тыс.";
+  if (n >= 1000) return (n / 1000).toFixed(1) + "k";
   return Math.floor(n) + "";
 }
 
@@ -155,7 +155,7 @@ function update() {
   document.getElementById("day").textContent = S.day;
   const p = Math.min(100, (S.followers / 10000) * 100);
   document.getElementById("prog").style.width = p + "%";
-  document.getElementById("prog-text").textContent = fmt(S.followers) + " / 10к";
+  document.getElementById("prog-text").textContent = fmt(S.followers) + " / 10k";
 }
 
 function start() {
@@ -180,13 +180,13 @@ function openChoices() {
   if (S.boss) {
     const h = document.createElement("div");
     h.style.cssText = "font-size:8px;color:#c084fc;margin-bottom:8px";
-    h.textContent = "БОСС-ФАЙТ — ВЫБЕРИ ДЕЙСТВИЕ";
+    h.textContent = "BOSS FIGHT — CHOOSE YOUR MOVE";
     box.appendChild(h);
 
     [
-      {n: "Игнорировать и постить как обычно", d: "Рискованно"},
-      {n: "Прямо обратиться к проблеме", d: "Конфронтация"},
-      {n: "Уйти в полный хаос", d: "Высокий риск / высокая награда"}
+      {n: "Ignore it and post normally", d: "Risky"},
+      {n: "Address the problem directly", d: "Confront"},
+      {n: "Go full chaos mode", d: "High risk / high reward"}
     ].forEach((o, i) => {
       const b = document.createElement("button");
       b.className = "choice boss";
@@ -197,7 +197,7 @@ function openChoices() {
   } else {
     const h = document.createElement("div");
     h.style.cssText = "font-size:8px;color:#71767b;margin-bottom:8px";
-    h.textContent = "ВЫБЕРИ ТЕМУ";
+    h.textContent = "CHOOSE A TOPIC";
     box.appendChild(h);
 
     TOPICS.forEach(t => {
@@ -212,7 +212,7 @@ function openChoices() {
 
 function doPost(topic) {
   hideAll();
-  document.getElementById("status").textContent = "Публикуем...";
+  document.getElementById("status").textContent = "Posting...";
 
   setTimeout(() => {
     S.posts++;
@@ -226,7 +226,7 @@ function doPost(topic) {
     if (S.shadow > 0) {
       S.shadow--;
       gain = Math.floor(Math.random() * 60) - 30;
-      text = "Шедоубан ещё действует. Почти никто не увидел.";
+      text = "Still shadowbanned. Almost nobody saw it.";
       type = "bad";
     } else {
       const base = 250 + Math.floor(Math.random() * 550);
@@ -237,30 +237,29 @@ function doPost(topic) {
           banned = true;
         } else if (Math.random() < 0.55) {
           gain = -Math.floor(S.followers * (0.15 + Math.random() * 0.35));
-          text = "Пост провалился. Люди массово отписываются.";
+          text = "The post bombed. People are mass-unfollowing.";
           type = "bad";
         } else {
           gain = Math.floor(Math.random() * 80) - 40;
-          text = "Почти нулевой охват. Алгоритм проигнорировал.";
+          text = "Almost zero reach. Algorithm ignored you.";
           type = "bad";
         }
       } else if (roll > 0.78) {
         gain = base + 400 + Math.floor(Math.random() * 800);
-        text = "Пост реально залетел. Что за хрень.";
+        text = "It actually blew up. What the hell.";
         type = "good";
       } else {
         gain = base + Math.floor(Math.random() * 350);
-        text = "Хорошие цифры. Люди тебя находят.";
+        text = "Solid numbers. People are finding you.";
         type = "good";
       }
     }
 
     if (banned) {
-      return end(false, "Одного поста хватило.<br><br>Массовые отписки + бан.<br>Аккаунт уничтожен.");
+      return end(false, "One post was enough.<br><br>Mass unfollows + ban.<br>Account destroyed.");
     }
 
     S.followers = Math.max(10, S.followers + gain);
-
     S.pendingEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
 
     showResult(gain, text, type);
@@ -274,7 +273,7 @@ function doPost(topic) {
 
 function fightBoss(choice) {
   hideAll();
-  document.getElementById("status").textContent = "Сражаемся...";
+  document.getElementById("status").textContent = "Fighting...";
 
   setTimeout(() => {
     S.posts++;
@@ -286,16 +285,16 @@ function fightBoss(choice) {
       S.followers += gain;
       S.doneBosses.add(S.boss.id);
       document.getElementById("boss-banner").classList.remove("show");
-      toast("БОСС ПОБЕЖДЁН");
-      showResult(gain, "Ты победил " + S.boss.name + "!", "good");
+      toast("BOSS DEFEATED");
+      showResult(gain, "You beat " + S.boss.name + "!", "good");
       S.boss = null;
     } else {
       if (Math.random() < 0.22) {
-        return end(false, S.boss.name + " уничтожил твой аккаунт.<br><br>Все ушли. Бан.");
+        return end(false, S.boss.name + " destroyed your account.<br><br>Everyone left. Ban hammer.");
       }
       const loss = Math.floor(S.followers * (0.18 + Math.random() * 0.32));
       S.followers = Math.max(25, S.followers - loss);
-      showResult(-loss, S.boss.name + " ударил сильно. Попробуй ещё.", "bad");
+      showResult(-loss, S.boss.name + " hit hard. Try again.", "bad");
       if (Math.random() < 0.4) {
         S.boss = null;
         document.getElementById("boss-banner").classList.remove("show");
@@ -303,7 +302,6 @@ function fightBoss(choice) {
     }
 
     S.pendingEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
-
     update();
     if (S.followers >= 10000) setTimeout(() => end(true), 700);
   }, 700);
@@ -313,7 +311,7 @@ function showResult(gain, text, type) {
   const c = document.getElementById("res-content");
   const cls = gain >= 0 ? "plus" : "minus";
   const sign = gain >= 0 ? "+" : "−";
-  c.innerHTML = `<div>Подписчики</div><div class="num ${cls}">${sign}${fmt(Math.abs(gain))}</div>`;
+  c.innerHTML = `<div>Followers</div><div class="num ${cls}">${sign}${fmt(Math.abs(gain))}</div>`;
 
   const e = document.getElementById("event");
   e.textContent = text;
@@ -339,23 +337,23 @@ function afterResult() {
     e.classList.add("show");
     e.style.color = "#ffd400";
 
-    if (S.pendingEvent.includes("Никита Бир") || S.pendingEvent.includes("охват упал")) {
+    if (S.pendingEvent.includes("Nikita Beer") || S.pendingEvent.includes("reach dropped")) {
       S.shadow = 1;
-      toast("Шедоубан");
-    } else if (S.pendingEvent.includes("Верифицированный") || S.pendingEvent.includes("цитирование") || S.pendingEvent.includes("рекомендации")) {
+      toast("Shadowban");
+    } else if (S.pendingEvent.includes("verified") || S.pendingEvent.includes("quote") || S.pendingEvent.includes("For You")) {
       const g = 200 + Math.floor(Math.random() * 400);
       S.followers += g;
       toast("+" + fmt(g));
-    } else if (S.pendingEvent.includes("пожаловался")) {
+    } else if (S.pendingEvent.includes("reported")) {
       if (Math.random() < 0.12) {
-        return end(false, "Жалоба прошла.<br>Аккаунт заблокирован.");
+        return end(false, "The report went through.<br>Account suspended.");
       }
     }
 
     S.pendingEvent = null;
     update();
 
-    document.getElementById("res-content").innerHTML = `<div style="font-size:9px;color:#ffd400">Событие произошло</div>`;
+    document.getElementById("res-content").innerHTML = `<div style="font-size:9px;color:#ffd400">Event happened</div>`;
     document.getElementById("results").classList.add("show");
     return;
   }
@@ -365,11 +363,11 @@ function afterResult() {
   }
 
   if (S.boss) {
-    document.getElementById("status").textContent = "Босс ждёт. Выбери действие.";
+    document.getElementById("status").textContent = "Boss is waiting. Choose your move.";
     openChoices();
   } else {
     document.getElementById("compose").classList.remove("hidden");
-    document.getElementById("status").textContent = "Что напишешь дальше?";
+    document.getElementById("status").textContent = "What do you post next?";
   }
 }
 
@@ -379,9 +377,9 @@ function spawnBoss() {
     if (!S.doneBosses.has(b.id)) {
       S.boss = b;
       const banner = document.getElementById("boss-banner");
-      banner.textContent = "БОСС: " + b.name + " — " + b.desc;
+      banner.textContent = "BOSS: " + b.name + " — " + b.desc;
       banner.classList.add("show");
-      toast("ПОЯВИЛСЯ БОСС");
+      toast("BOSS APPEARED");
       break;
     }
   }
@@ -392,22 +390,22 @@ function end(win, msg) {
   document.getElementById("end-screen").classList.add("active");
 
   if (win) {
-    document.getElementById("end-title").textContent = "ПОЗДРАВЛЯЮ!";
+    document.getElementById("end-title").textContent = "CONGRATS!";
     document.getElementById("end-title").style.color = "#00ba7c";
     document.getElementById("cert").innerHTML = `
-      Ты набрал <strong style="color:#1d9bf0">10 000 подписчиков</strong>.<br><br>
-      Монетизация разблокирована.<br><br>
-      Теперь ты зарабатываешь<br>
-      <strong style="color:#ffd400">примерно $3 в месяц</strong>.<br><br>
-      Алгоритм вынужден тебя замечать.<br>
-      (Пока что)
+      You reached <strong style="color:#1d9bf0">10,000 followers</strong>.<br><br>
+      Monetization unlocked.<br><br>
+      You now earn<br>
+      <strong style="color:#ffd400">about $3 a month</strong>.<br><br>
+      The algorithm is forced to notice you.<br>
+      (For now)
     `;
   } else {
-    document.getElementById("end-title").textContent = "АККАУНТ УНИЧТОЖЕН";
+    document.getElementById("end-title").textContent = "ACCOUNT DESTROYED";
     document.getElementById("end-title").style.color = "#f4212e";
-    document.getElementById("cert").innerHTML = msg || "Всё пропало.";
+    document.getElementById("cert").innerHTML = msg || "Everything is gone.";
   }
-  document.getElementById("end-stats").textContent = S.posts + " постов • День " + S.day;
+  document.getElementById("end-stats").textContent = S.posts + " posts • Day " + S.day;
 }
 </script>
 </body>
