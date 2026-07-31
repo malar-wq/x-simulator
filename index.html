@@ -394,11 +394,10 @@ function afterResult() {
 
   if (S.boss) {
     document.getElementById("status").textContent = "Boss is waiting. Choose your move.";
-    openChoices();
   } else {
-    document.getElementById("compose").classList.remove("hidden");
     document.getElementById("status").textContent = "What do you post next?";
   }
+  openChoices();
 }
 
 function checkBoss() {
