@@ -17,7 +17,6 @@ body{background:var(--bg);color:var(--text);font-family:'Press Start 2P',monospa
 .pixel-btn{background:var(--accent);color:#fff;border:3px solid #fff;border-bottom-width:5px;border-right-width:5px;padding:12px 16px;font-family:inherit;font-size:11px;cursor:pointer;text-transform:uppercase}
 .pixel-btn:active{border-bottom-width:2px;border-right-width:2px;transform:translate(2px,2px)}
 .pixel-btn.full{width:100%}
-.pixel-btn.danger{background:var(--red)}
 .stats{background:var(--panel);border:3px solid var(--border);padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stat-label{font-size:7px;color:var(--muted)}
 .stat-value{font-size:14px}
@@ -88,7 +87,7 @@ body{background:var(--bg);color:var(--text);font-family:'Press Start 2P',monospa
     <div class="event" id="event"></div>
 
     <div id="compose">
-      <button class="pixel-btn full" onclick="showTopics()">WRITE A POST</button>
+      <button class="pixel-btn full" id="main-btn" onclick="showTopics()">WRITE A POST</button>
     </div>
     <div id="choices" class="choices hidden"></div>
     <div id="results" class="results">
@@ -134,14 +133,11 @@ let S = {
   posts: 0,
   day: 1,
   shadow: 0,
-  dead: false,
   bossesDone: new Set(),
-  currentBoss: null,
-  monetized: false
+  currentBoss: null
 };
 
 function fmt(n){
-  if(n >= 10000) return (n/1000).toFixed(1) + "k";
   if(n >= 1000) return (n/1000).toFixed(1) + "k";
   return Math.floor(n) + "";
 }
@@ -150,7 +146,7 @@ function toast(msg){
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2400);
+  setTimeout(() => t.classList.remove("show"), 2200);
 }
 
 function update(){
@@ -178,13 +174,17 @@ function showTopics(){
   box.innerHTML = "";
 
   if(S.currentBoss){
-    box.innerHTML = `<div style="font-size:8px;color:var(--purple);margin-bottom:6px">BOSS FIGHT</div>`;
+    const title = document.createElement("div");
+    title.style.cssText = "font-size:8px;color:var(--purple);margin-bottom:6px";
+    title.textContent = "BOSS FIGHT — CHOOSE ACTION";
+    box.appendChild(title);
+
     const opts = [
       {name:"Ignore it and post normally", desc:"Risky"},
       {name:"Address the problem directly", desc:"Confront"},
       {name:"Go full chaos mode", desc:"Maximum risk"}
     ];
-    opts.forEach((o,i) => {
+    opts.forEach((o, i) => {
       const b = document.createElement("button");
       b.className = "choice boss";
       b.innerHTML = `<span class="choice-name">${o.name}</span><span class="choice-desc">${o.desc}</span>`;
@@ -192,7 +192,11 @@ function showTopics(){
       box.appendChild(b);
     });
   } else {
-    box.innerHTML = `<div style="font-size:8px;color:var(--muted);margin-bottom:6px">CHOOSE A TOPIC</div>`;
+    const title = document.createElement("div");
+    title.style.cssText = "font-size:8px;color:var(--muted);margin-bottom:6px";
+    title.textContent = "CHOOSE A TOPIC";
+    box.appendChild(title);
+
     TOPICS.forEach(t => {
       const b = document.createElement("button");
       b.className = "choice";
@@ -218,31 +222,31 @@ function doPost(topic){
 
     if(S.shadow > 0){
       S.shadow--;
-      gain = Math.floor(Math.random() * 40) - 10;
+      gain = Math.floor(Math.random() * 50) - 15;
       text = "Still under shadowban. Almost nobody saw it.";
       type = "bad";
     } else {
-      const base = 180 + Math.floor(Math.random() * 520);
+      const base = 200 + Math.floor(Math.random() * 500);
       const roll = Math.random();
 
-      if(roll < topic.risk * 0.55){
-        if(Math.random() < 0.18){
+      if(roll < topic.risk * 0.5){
+        if(Math.random() < 0.16){
           banned = true;
-        } else if(Math.random() < 0.35){
-          gain = -Math.floor(S.followers * (0.3 + Math.random() * 0.5));
-          text = "The post bombed hard. People are leaving.";
+        } else if(Math.random() < 0.4){
+          gain = -Math.floor(S.followers * (0.25 + Math.random() * 0.45));
+          text = "The post bombed. People are leaving.";
           type = "bad";
         } else {
-          gain = Math.floor(Math.random() * 60) - 20;
-          text = "Barely any reach. The algorithm shrugged.";
+          gain = Math.floor(Math.random() * 80) - 30;
+          text = "Barely any reach.";
           type = "bad";
         }
-      } else if(roll > 0.78){
-        gain = base + Math.floor(Math.random() * 600) + 200;
+      } else if(roll > 0.75){
+        gain = base + 300 + Math.floor(Math.random() * 700);
         text = "It actually blew up. What the hell.";
         type = "good";
       } else {
-        gain = base + Math.floor(Math.random() * 300);
+        gain = base + Math.floor(Math.random() * 350);
         text = "Solid numbers. People are finding you.";
         type = "good";
       }
@@ -257,50 +261,53 @@ function doPost(topic){
     showResult(gain, text, type);
     update();
 
-    if(S.posts % 5 === 0 && S.posts > 0){
-      setTimeout(triggerSpecial, 600);
-    } else {
-      checkBoss();
+    if(S.followers >= 10000){
+      setTimeout(() => endGame(true), 800);
+      return;
     }
 
-    if(S.followers >= 10000){
-      setTimeout(() => endGame(true), 900);
+    if(S.posts > 0 && S.posts % 5 === 0){
+      setTimeout(triggerSpecial, 500);
+    } else {
+      setTimeout(checkBoss, 300);
     }
-  }, 700);
+  }, 650);
 }
 
-function resolveBoss(choice){
+function resolveBoss(choiceIndex){
   document.getElementById("choices").classList.add("hidden");
-  document.getElementById("status").innerHTML = `<span class="loading">Fighting the boss...</span>`;
+  document.getElementById("status").innerHTML = `<span class="loading">Fighting...</span>`;
 
   setTimeout(() => {
     S.posts++;
-    const success = Math.random() < (0.45 + choice * 0.12);
+    const successChance = 0.42 + choiceIndex * 0.15;
+    const success = Math.random() < successChance;
 
     if(success){
-      const gain = 400 + Math.floor(Math.random() * 900);
+      const gain = 500 + Math.floor(Math.random() * 900);
       S.followers += gain;
       S.bossesDone.add(S.currentBoss.id);
       document.getElementById("boss-banner").classList.remove("show");
       toast("BOSS DEFEATED");
-      showResult(gain, `You survived ${S.currentBoss.name}!`, "good");
+      showResult(gain, "You survived " + S.currentBoss.name + "!", "good");
       S.currentBoss = null;
     } else {
-      if(Math.random() < 0.25){
-        endGame(false, `${S.currentBoss.name} destroyed your account.<br><br>Everyone left. Ban hammer.`);
+      if(Math.random() < 0.22){
+        endGame(false, S.currentBoss.name + " destroyed your account.<br><br>Everyone left. Ban hammer.");
         return;
       }
-      const loss = Math.floor(S.followers * (0.25 + Math.random() * 0.4));
-      S.followers = Math.max(15, S.followers - loss);
-      showResult(-loss, `${S.currentBoss.name} hit hard. You're still alive though.`, "bad");
-      if(Math.random() < 0.6){
+      const loss = Math.floor(S.followers * (0.2 + Math.random() * 0.35));
+      S.followers = Math.max(20, S.followers - loss);
+      showResult(-loss, S.currentBoss.name + " hit hard. Try again.", "bad");
+      if(Math.random() < 0.5){
         S.currentBoss = null;
         document.getElementById("boss-banner").classList.remove("show");
       }
     }
+
     update();
-    if(S.followers >= 10000) setTimeout(() => endGame(true), 800);
-  }, 900);
+    if(S.followers >= 10000) setTimeout(() => endGame(true), 700);
+  }, 800);
 }
 
 function triggerSpecial(){
@@ -314,17 +321,17 @@ function triggerSpecial(){
     S.shadow = 2;
     toast("Shadowban applied");
   } else if(ev.effect === "boost"){
-    const g = 300 + Math.floor(Math.random() * 500);
+    const g = 350 + Math.floor(Math.random() * 550);
     S.followers += g;
-    toast("+" + fmt(g) + " from the event");
+    toast("+" + fmt(g) + " from event");
   } else if(ev.effect === "chaos"){
-    if(Math.random() < 0.5){
-      S.followers += 400 + Math.floor(Math.random()*600);
+    if(Math.random() < 0.55){
+      S.followers += 450 + Math.floor(Math.random() * 600);
     } else {
-      S.followers = Math.max(20, S.followers - Math.floor(S.followers*0.2));
+      S.followers = Math.max(25, S.followers - Math.floor(S.followers * 0.18));
     }
   } else if(ev.effect === "risk"){
-    if(Math.random() < 0.15){
+    if(Math.random() < 0.12){
       endGame(false, "The report went through.<br>Your account got suspended.");
       return;
     }
@@ -334,11 +341,12 @@ function triggerSpecial(){
 }
 
 function checkBoss(){
+  if(S.currentBoss) return;
   for(const b of BOSSES){
-    if(!S.bossesDone.has(b.id) && S.followers >= b.trigger && !S.currentBoss){
+    if(!S.bossesDone.has(b.id) && S.followers >= b.trigger){
       S.currentBoss = b;
       const banner = document.getElementById("boss-banner");
-      banner.textContent = `BOSS: ${b.name} — ${b.desc}`;
+      banner.textContent = "BOSS: " + b.name + " — " + b.desc;
       banner.classList.add("show");
       document.getElementById("status").textContent = "A boss appeared!";
       toast("BOSS INCOMING");
@@ -351,10 +359,8 @@ function showResult(gain, text, type){
   const content = document.getElementById("res-content");
   const cls = gain > 0 ? "plus" : (gain < 0 ? "minus" : "");
   const sign = gain > 0 ? "+" : "";
-  content.innerHTML = `
-    <div>Followers</div>
-    <div class="big ${cls}">${sign}${fmt(gain)}</div>
-  `;
+  content.innerHTML = `<div>Followers</div><div class="big ${cls}">${sign}${fmt(Math.abs(gain))}</div>`;
+
   const ev = document.getElementById("event");
   ev.textContent = text;
   ev.classList.add("show");
@@ -372,8 +378,14 @@ function showResult(gain, text, type){
 function continueGame(){
   document.getElementById("results").classList.remove("show");
   document.getElementById("event").classList.remove("show");
-  document.getElementById("compose").classList.remove("hidden");
-  document.getElementById("status").textContent = S.currentBoss ? "The boss is still here..." : "What do you post next?";
+
+  if(S.currentBoss){
+    document.getElementById("status").textContent = "The boss is waiting...";
+    showTopics();
+  } else {
+    document.getElementById("compose").classList.remove("hidden");
+    document.getElementById("status").textContent = "What do you post next?";
+  }
 }
 
 function endGame(win, customMsg){
@@ -383,18 +395,13 @@ function endGame(win, customMsg){
   if(win){
     document.getElementById("end-title").textContent = "MONETIZED";
     document.getElementById("end-title").style.color = "#00ba7c";
-    document.getElementById("cert").innerHTML = `
-      You reached <strong style="color:#1d9bf0">10,000 followers</strong><br><br>
-      Monetization is now unlocked.<br>
-      The algorithm has been forced to respect you.<br><br>
-      (For now)
-    `;
+    document.getElementById("cert").innerHTML = `You reached <strong style="color:#1d9bf0">10,000 followers</strong><br><br>Monetization unlocked.<br>The algorithm has been forced to respect you.`;
   } else {
     document.getElementById("end-title").textContent = "ACCOUNT DESTROYED";
     document.getElementById("end-title").style.color = "#f4212e";
     document.getElementById("cert").innerHTML = customMsg || "Everything is gone.";
   }
-  document.getElementById("end-stats").textContent = `${S.posts} posts • Day ${S.day}`;
+  document.getElementById("end-stats").textContent = S.posts + " posts • Day " + S.day;
 }
 </script>
 </body>
