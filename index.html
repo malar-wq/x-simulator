@@ -58,7 +58,7 @@ body{background:#000;color:#e7e9ea;font-family:'Press Start 2P',monospace;font-s
   <div class="logo">X SIMULATOR</div>
   <div class="subtitle">Become popular in 3–5 minutes.<br>Or lose everything in one post.</div>
   <button class="btn" style="width:auto" onclick="start()">START</button>
-  <div class="footer">v4 EN</div>
+  <div class="footer">v5</div>
 </div>
 
 <div id="game-screen" class="screen">
@@ -110,6 +110,32 @@ const TOPICS = [
   {name: "Pure shitpost", desc: "Zero thoughts", risk: 0.45}
 ];
 
+const GOOD_TEXTS = [
+  "Solid numbers. People are finding you.",
+  "It actually blew up. What the hell.",
+  "The algorithm decided you exist today.",
+  "Mid-sized accounts are quoting you.",
+  "Views are climbing. Suspicious.",
+  "Someone with 50k followers liked it.",
+  "This one feels different. In a good way.",
+  "You're officially not invisible anymore.",
+  "The void is paying attention for once.",
+  "Decent engagement. The machine is watching."
+];
+
+const BAD_TEXTS = [
+  "The post bombed. People are mass-unfollowing.",
+  "Almost zero reach. Algorithm ignored you.",
+  "4 views. The algorithm said 'nah'.",
+  "Your best post got 17 impressions.",
+  "Someone replied 'this ain't it'.",
+  "You refreshed analytics 14 times. Still nothing.",
+  "The For You page rejected your existence.",
+  "Impressions: theoretical.",
+  "Even your mom didn't like this one.",
+  "Quiet day. Too quiet."
+];
+
 const EVENTS = [
   "Your post got into a huge quote chain.",
   "Nikita Beer posted a thread about the algorithm. Your reach dropped.",
@@ -118,13 +144,15 @@ const EVENTS = [
   "Someone reported your account for 'spam'.",
   "The algorithm is being especially moody today.",
   "A few mid-sized accounts started quoting you.",
-  "Your post randomly hit the For You page."
+  "Your post randomly hit the For You page.",
+  "You got ratio'd by a reply with 3 likes.",
+  "A bot farm started interacting with your post."
 ];
 
 const BOSSES = [
-  {id: 1, name: "THE SILENCE", desc: "Nobody sees your posts.", at: 5},
-  {id: 2, name: "RATIO DEMON", desc: "Your best posts get 17 views.", at: 10},
-  {id: 3, name: "THE ALGORITHM", desc: "Final boss. It decides your fate.", at: 15}
+  {id: 1, name: "THE SILENCE", desc: "Nobody sees your posts.", trigger: 3300},
+  {id: 2, name: "RATIO DEMON", desc: "Your best posts get 17 views.", trigger: 6600},
+  {id: 3, name: "THE ALGORITHM", desc: "Final boss. It decides your fate.", trigger: 9000}
 ];
 
 let S = {
@@ -136,6 +164,10 @@ let S = {
   boss: null,
   pendingEvent: null
 };
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 function fmt(n) {
   if (n >= 1000) return (n / 1000).toFixed(1) + "k";
@@ -226,31 +258,31 @@ function doPost(topic) {
     if (S.shadow > 0) {
       S.shadow--;
       gain = Math.floor(Math.random() * 60) - 30;
-      text = "Still shadowbanned. Almost nobody saw it.";
+      text = pick(BAD_TEXTS);
       type = "bad";
     } else {
-      const base = 250 + Math.floor(Math.random() * 550);
+      const base = 280 + Math.floor(Math.random() * 520);
       const roll = Math.random();
 
       if (roll < topic.risk * 0.55) {
-        if (Math.random() < 0.14) {
+        if (Math.random() < 0.13) {
           banned = true;
         } else if (Math.random() < 0.55) {
           gain = -Math.floor(S.followers * (0.15 + Math.random() * 0.35));
-          text = "The post bombed. People are mass-unfollowing.";
+          text = pick(BAD_TEXTS);
           type = "bad";
         } else {
           gain = Math.floor(Math.random() * 80) - 40;
-          text = "Almost zero reach. Algorithm ignored you.";
+          text = pick(BAD_TEXTS);
           type = "bad";
         }
-      } else if (roll > 0.78) {
-        gain = base + 400 + Math.floor(Math.random() * 800);
-        text = "It actually blew up. What the hell.";
+      } else if (roll > 0.77) {
+        gain = base + 450 + Math.floor(Math.random() * 750);
+        text = pick(GOOD_TEXTS);
         type = "good";
       } else {
-        gain = base + Math.floor(Math.random() * 350);
-        text = "Solid numbers. People are finding you.";
+        gain = base + Math.floor(Math.random() * 320);
+        text = pick(GOOD_TEXTS);
         type = "good";
       }
     }
@@ -260,7 +292,7 @@ function doPost(topic) {
     }
 
     S.followers = Math.max(10, S.followers + gain);
-    S.pendingEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+    S.pendingEvent = pick(EVENTS);
 
     showResult(gain, text, type);
     update();
@@ -277,11 +309,11 @@ function fightBoss(choice) {
 
   setTimeout(() => {
     S.posts++;
-    const chance = 0.38 + choice * 0.17;
+    const chance = 0.40 + choice * 0.16;
     const win = Math.random() < chance;
 
     if (win) {
-      const gain = 700 + Math.floor(Math.random() * 1100);
+      const gain = 600 + Math.floor(Math.random() * 1000);
       S.followers += gain;
       S.doneBosses.add(S.boss.id);
       document.getElementById("boss-banner").classList.remove("show");
@@ -289,19 +321,19 @@ function fightBoss(choice) {
       showResult(gain, "You beat " + S.boss.name + "!", "good");
       S.boss = null;
     } else {
-      if (Math.random() < 0.22) {
+      if (Math.random() < 0.20) {
         return end(false, S.boss.name + " destroyed your account.<br><br>Everyone left. Ban hammer.");
       }
-      const loss = Math.floor(S.followers * (0.18 + Math.random() * 0.32));
+      const loss = Math.floor(S.followers * (0.18 + Math.random() * 0.30));
       S.followers = Math.max(25, S.followers - loss);
       showResult(-loss, S.boss.name + " hit hard. Try again.", "bad");
-      if (Math.random() < 0.4) {
+      if (Math.random() < 0.40) {
         S.boss = null;
         document.getElementById("boss-banner").classList.remove("show");
       }
     }
 
-    S.pendingEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+    S.pendingEvent = pick(EVENTS);
     update();
     if (S.followers >= 10000) setTimeout(() => end(true), 700);
   }, 700);
@@ -340,12 +372,12 @@ function afterResult() {
     if (S.pendingEvent.includes("Nikita Beer") || S.pendingEvent.includes("reach dropped")) {
       S.shadow = 1;
       toast("Shadowban");
-    } else if (S.pendingEvent.includes("verified") || S.pendingEvent.includes("quote") || S.pendingEvent.includes("For You")) {
-      const g = 200 + Math.floor(Math.random() * 400);
+    } else if (S.pendingEvent.includes("verified") || S.pendingEvent.includes("quote") || S.pendingEvent.includes("For You") || S.pendingEvent.includes("boosted")) {
+      const g = 180 + Math.floor(Math.random() * 380);
       S.followers += g;
       toast("+" + fmt(g));
     } else if (S.pendingEvent.includes("reported")) {
-      if (Math.random() < 0.12) {
+      if (Math.random() < 0.11) {
         return end(false, "The report went through.<br>Account suspended.");
       }
     }
@@ -358,9 +390,7 @@ function afterResult() {
     return;
   }
 
-  if (S.posts > 0 && S.posts % 5 === 0) {
-    spawnBoss();
-  }
+  checkBoss();
 
   if (S.boss) {
     document.getElementById("status").textContent = "Boss is waiting. Choose your move.";
@@ -371,10 +401,10 @@ function afterResult() {
   }
 }
 
-function spawnBoss() {
+function checkBoss() {
   if (S.boss) return;
   for (const b of BOSSES) {
-    if (!S.doneBosses.has(b.id)) {
+    if (!S.doneBosses.has(b.id) && S.followers >= b.trigger) {
       S.boss = b;
       const banner = document.getElementById("boss-banner");
       banner.textContent = "BOSS: " + b.name + " — " + b.desc;
