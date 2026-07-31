@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>X Simulator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  :root {
+    --bg: #000000;
+    --panel: #0f0f0f;
+    --border: #333;
+    --text: #e7e9ea;
+    --muted: #71767b;
+    --accent: #1d9bf0;
+    --green: #00ba7c;
+    --red: #f4212e;
+    --yellow: #ffd400;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  .screen {
+    display: none;
+    width: 100%;
+    max-width: 420px;
+    padding: 16px;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 100dvh;
+  }
+
+  .screen.active {
+    display: flex;
+  }
+
+  #title-screen {
+    justify-content: center;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .logo {
+    font-size: 22px;
+    color: var(--accent);
+    text-shadow: 3px 3px 0 #000;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    font-size: 10px;
+    color: var(--muted);
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .pixel-btn {
+    background: var(--accent);
+    color: #fff;
+    border: 3px solid #fff;
+    border-bottom-width: 6px;
+    border-right-width: 6px;
+    padding: 14px 20px;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    image-rendering: pixelated;
+    transition: all 0.05s;
+    text-transform: uppercase;
+  }
+
+  .pixel-btn:active {
+    border-bottom-width: 3px;
+    border-right-width: 3px;
+    transform: translate(3px, 3px);
+  }
+
+  .pixel-btn.secondary {
+    background: #333;
+    border-color: #666;
+  }
+
+  .pixel-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .stats {
+    background: var(--panel);
+    border: 3px solid var(--border);
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    font-size: 8px;
+    color: var(--muted);
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+
+  .stat-value.big {
+    color: var(--accent);
+  }
+
+  .progress-bar {
+    grid-column: 1 / -1;
+    height: 12px;
+    background: #222;
+    border: 2px solid #444;
+    margin-top: 4px;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.6s ease;
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 7px;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  .main-panel {
+    background: var(--panel);
+    border: 3px solid var(--border);
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .day-counter {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .status-msg {
+    font-size: 10px;
+    text-align: center;
+    min-height: 40px;
+    color: var(--text);
+  }
+
+  .event-box {
+    background: #111;
+    border: 2px dashed #444;
+    padding: 10px;
+    font-size: 9px;
+    color: var(--yellow);
+    display: none;
+  }
+
+  .event-box.show {
+    display: block;
+  }
+
+  .topics {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .topic-btn {
+    background: #1a1a1a;
+    border: 3px solid #444;
+    color: var(--text);
+    padding: 12px 10px;
+    font-family: inherit;
+    font-size: 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.1s;
+  }
+
+  .topic-btn:hover, .topic-btn:active {
+    border-color: var(--accent);
+  }
+
+  .topic-name {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .topic-desc {
+    font-size: 8px;
+    color: var(--muted);
+  }
+
+  .results {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .results.show {
+    display: flex;
+  }
+
+  .result-line {
+    font-size: 11px;
+  }
+
+  .result-line .plus { color: var(--green); }
+  .result-line .minus { color: var(--red); }
+  .result-line .neutral { color: var(--muted); }
+
+  .big-number {
+    font-size: 18px;
+    color: var(--accent);
+    margin: 8px 0;
+  }
+
+  #win-screen {
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .win-title {
+    font-size: 18px;
+    color: var(--green);
+  }
+
+  .certificate {
+    background: #111;
+    border: 4px solid var(--yellow);
+    padding: 20px 16px;
+    margin: 10px 0;
+  }
+
+  .cert-title {
+    font-size: 12px;
+    color: var(--yellow);
+    margin-bottom: 12px;
+  }
+
+  .cert-text {
+    font-size: 9px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .footer {
+    font-size: 8px;
+    color: var(--muted);
+    text-align: center;
+    padding: 8px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .loading {
+    animation: pulse 0.8s infinite;
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="title-screen" class="screen active">
+  <div class="logo">X SIMULATOR</div>
+  <div class="subtitle">Finally, a place where small accounts can feel popular.</div>
+  <div style="font-size:9px;color:#555;margin:8px 0;">A 3-5 minute indie experience</div>
+  <button class="pixel-btn" onclick="startGame()">START ACCOUNT</button>
+  <div class="footer">Made for fun • Not affiliated with X</div>
+</div>
+
+<div id="game-screen" class="screen">
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">FOLLOWERS</div>
+      <div class="stat-value big" id="followers">87</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">POSTS</div>
+      <div class="stat-value" id="posts">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">TODAY VIEWS</div>
+      <div class="stat-value" id="views">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">MONETIZATION</div>
+      <div class="stat-value" id="monetization">LOCKED</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress"></div>
+      <div class="progress-text" id="progress-text">0 / 100k</div>
+    </div>
+  </div>
+
+  <div class="main-panel">
+    <div class="day-counter">Day <span id="day">1</span> • Small Account Era</div>
+    
+    <div class="status-msg" id="status">Your feed is quiet. Time to post something.</div>
+    
+    <div class="event-box" id="event-box"></div>
+
+    <div id="compose-area">
+      <button class="pixel-btn" style="width:100%" onclick="showTopics()">WRITE A POST</button>
+    </div>
+
+    <div id="topics-area" class="topics hidden">
+      <div style="font-size:9px;color:var(--muted);margin-bottom:6px;">CHOOSE A TOPIC:</div>
+    </div>
+
+    <div id="results-area" class="results">
+      <div id="results-content"></div>
+      <button class="pixel-btn" style="width:100%;margin-top:10px" onclick="nextTurn()">CONTINUE</button>
+    </div>
+  </div>
+</div>
+
+<div id="win-screen" class="screen">
+  <div class="win-title">YOU MADE IT</div>
+  <div class="certificate">
+    <div class="cert-title">★ OFFICIAL CERTIFICATE ★</div>
+    <div class="cert-text">
+      This account has reached<br>
+      <strong style="color:#1d9bf0">100,000 FOLLOWERS</strong><br><br>
+      and is now<br>
+      <strong style="color:#00ba7c">ELIGIBLE FOR MONETIZATION</strong><br><br>
+      The algorithm has spoken.<br>
+      (for now)
+    </div>
+  </div>
+  <div style="font-size:10px;color:var(--muted)">
+    Final stats:<br>
+    <span id="final-posts"></span> posts • <span id="final-days"></span> days
+  </div>
+  <button class="pixel-btn" onclick="location.reload()">PLAY AGAIN</button>
+  <div class="footer">Share your run on X</div>
+</div>
+
+<script>
+const TOPICS = [
+  {
+    id: 'life',
+    name: 'Daily Life & Coffee',
+    desc: 'Safe. Relatable. Algorithm usually shrugs.',
+    baseReach: 1.1,
+    risk: 0.15,
+    mood: 'safe'
+  },
+  {
+    id: 'algo',
+    name: 'Rage at the Algorithm',
+    desc: 'High variance. Sometimes goes nuclear.',
+    baseReach: 1.6,
+    risk: 0.45,
+    mood: 'risky'
+  },
+  {
+    id: 'nostalgia',
+    name: 'Childhood Nostalgia',
+    desc: 'Warm feelings. Decent engagement.',
+    baseReach: 1.3,
+    risk: 0.2,
+    mood: 'warm'
+  },
+  {
+    id: 'ai',
+    name: 'Hot Take on AI',
+    desc: 'Everyone has one. Hits or misses hard.',
+    baseReach: 1.5,
+    risk: 0.4,
+    mood: 'spicy'
+  },
+  {
+    id: 'shitpost',
+    name: 'Pure Absurdist Shitpost',
+    desc: 'Zero strategy. Maximum chaos.',
+    baseReach: 1.8,
+    risk: 0.55,
+    mood: 'chaos'
+  }
+];
+
+let state = {
+  followers: 87,
+  posts: 0,
+  day: 1,
+  views: 0,
+  shadowban: 0,
+  momentum: 1,
+  lastTopic: null
+};
+
+function formatNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'k';
+  return Math.floor(n).toString();
+}
+
+function updateUI() {
+  document.getElementById('followers').textContent = formatNum(state.followers);
+  document.getElementById('posts').textContent = state.posts;
+  document.getElementById('day').textContent = state.day;
+  document.getElementById('views').textContent = formatNum(state.views);
+  
+  const progress = Math.min(100, (state.followers / 100000) * 100);
+  document.getElementById('progress').style.width = progress + '%';
+  document.getElementById('progress-text').textContent = formatNum(state.followers) + ' / 100k';
+
+  if (state.followers >= 100000) {
+    document.getElementById('monetization').textContent = 'UNLOCKED';
+    document.getElementById('monetization').style.color = '#00ba7c';
+  }
+}
+
+function startGame() {
+  document.getElementById('title-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+  updateUI();
+}
+
+function showTopics() {
+  document.getElementById('compose-area').classList.add('hidden');
+  document.getElementById('results-area').classList.remove('show');
+  document.getElementById('event-box').classList.remove('show');
+  
+  const area = document.getElementById('topics-area');
+  area.classList.remove('hidden');
+  area.innerHTML = '<div style="font-size:9px;color:var(--muted);margin-bottom:6px;">CHOOSE A TOPIC:</div>';
+  
+  TOPICS.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-btn';
+    btn.innerHTML = '<span class="topic-name">' + t.name + '</span><span class="topic-desc">' + t.desc + '</span>';
+    btn.onclick = function() { postTopic(t); };
+    area.appendChild(btn);
+  });
+}
+
+function postTopic(topic) {
+  document.getElementById('topics-area').classList.add('hidden');
+  document.getElementById('status').innerHTML = '<span class="loading">Posting...</span>';
+  
+  setTimeout(function() {
+    resolvePost(topic);
+  }, 900 + Math.random() * 600);
+}
+
+function resolvePost(topic) {
+  state.posts++;
+  state.lastTopic = topic.id;
+
+  let views = 0;
+  let followerDelta = 0;
+  let eventText = null;
+  let eventType = null;
+
+  if (state.shadowban > 0) {
+    state.shadowban--;
+    views = Math.floor(Math.random() * 12) + 3;
+    followerDelta = Math.random() < 0.3 ? -1 : 0;
+    eventText = "You're still in the shadow realm. The algorithm is ignoring you.";
+    eventType = 'bad';
+  } else {
+    const base = state.followers * (0.4 + Math.random() * 1.8);
+    views = Math.floor(base * topic.baseReach * state.momentum);
+
+    const roll = Math.random();
+    
+    if (roll < topic.risk * 0.35) {
+      views = Math.floor(views * 0.15);
+      followerDelta = -Math.floor(3 + Math.random() * 12);
+      eventText = getBadEvent(topic);
+      eventType = 'bad';
+      if (Math.random() < 0.4) {
+        state.shadowban = 1 + Math.floor(Math.random() * 2);
+        eventText += " Shadowban applied.";
+      }
+      state.momentum = Math.max(0.6, state.momentum - 0.15);
+    } else if (roll > 0.82) {
+      views = Math.floor(views * (2.5 + Math.random() * 4));
+      followerDelta = Math.floor(views * (0.008 + Math.random() * 0.02));
+      eventText = getGoodEvent(topic);
+      eventType = 'good';
+      state.momentum = Math.min(2.2, state.momentum + 0.25);
+    } else {
+      followerDelta = Math.floor(views * (0.002 + Math.random() * 0.006));
+      if (followerDelta < 1 && Math.random() > 0.4) followerDelta = 1;
+      eventText = getNormalEvent(topic);
+      eventType = 'normal';
+      state.momentum = Math.min(1.8, state.momentum + 0.05);
+    }
+  }
+
+  if (state.followers < 500 && followerDelta > 40) {
+    followerDelta = 15 + Math.floor(Math.random() * 25);
+  }
+
+  state.views = views;
+  state.followers = Math.max(12, state.followers + followerDelta);
+
+  if (state.posts % 2 === 0) state.day++;
+
+  showResults(views, followerDelta, eventText, eventType);
+  updateUI();
+
+  if (state.followers >= 100000) {
+    setTimeout(showWin, 1200);
+  }
+}
+
+function getBadEvent(topic) {
+  const options = [
+    "4 views. The algorithm looked at your post and said 'nah'.",
+    "Someone replied 'this ain't it'. Ratio imminent.",
+    "Your post got 0 likes. Even your mom didn't like it.",
+    "Impressions: 7. Engagement: theoretical.",
+    "The For You page has rejected your existence today."
+  ];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function getGoodEvent(topic) {
+  const options = [
+    "A mid-sized account quote-tweeted you. Traffic incoming.",
+    "The algorithm decided you exist today. Congrats.",
+    "People are actually reading this. Suspicious.",
+    "You got ratio'd... but in a good way? Numbers are up.",
+    "Viral adjacent. Not quite, but close enough to feel something."
+  ];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function getNormalEvent(topic) {
+  const options = [
+    "Decent numbers. The algorithm is mildly aware of you.",
+    "A few people scrolled past and didn't hate it.",
+    "Quiet day. At least nothing bad happened.",
+    "Standard small account experience. Carry on.",
+    "You posted. The void acknowledged you briefly."
+  ];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function showResults(views, delta, eventText, type) {
+  const area = document.getElementById('results-area');
+  const content = document.getElementById('results-content');
+  
+  let deltaClass = delta > 0 ? 'plus' : (delta < 0 ? 'minus' : 'neutral');
+  let deltaStr = delta > 0 ? '+' + formatNum(delta) : formatNum(delta);
+
+  content.innerHTML = 
+    '<div class="result-line">Views: <span class="big-number">' + formatNum(views) + '</span></div>' +
+    '<div class="result-line">Followers: <span class="' + deltaClass + '">' + deltaStr + '</span></div>';
+
+  const eventBox = document.getElementById('event-box');
+  eventBox.textContent = eventText;
+  eventBox.classList.add('show');
+  eventBox.style.color = type === 'good' ? '#00ba7c' : (type === 'bad' ? '#f4212e' : '#ffd400');
+
+  document.getElementById('status').textContent = '';
+  area.classList.add('show');
+}
+
+function nextTurn() {
+  document.getElementById('results-area').classList.remove('show');
+  document.getElementById('event-box').classList.remove('show');
+  document.getElementById('compose-area').classList.remove('hidden');
+  
+  if (state.followers < 1000) {
+    document.getElementById('status').textContent = "Still small. Keep posting.";
+  } else if (state.followers < 10000) {
+    document.getElementById('status').textContent = "Growing... the algorithm is watching.";
+  } else if (state.followers < 50000) {
+    document.getElementById('status').textContent = "You're no longer invisible. Dangerous territory.";
+  } else {
+    document.getElementById('status').textContent = "Almost there. Don't screw it up now.";
+  }
+}
+
+function showWin() {
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('win-screen').classList.add('active');
+  document.getElementById('final-posts').textContent = state.posts;
+  document.getElementById('final-days').textContent = state.day;
+}
+</script>
+</body>
+</html>
